@@ -1,6 +1,25 @@
+# Third-Party Notices
+
+This project uses the following third-party open source component:
+
+---
+
+## ARIS ⚔️ (Auto-Research-In-Sleep)
+
+- **Project**: ARIS (Auto-claude-code-research-in-sleep)
+- **Source**: https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep
+- **License**: MIT License
+- **Copyright**: Copyright (c) 2026 wanshuiyin
+
+### MIT License
+
+The full text of the MIT License under which this component is used is reproduced below:
+
+---
+
 MIT License
 
-Copyright (c) 2026 Yuxin Zhao (YuxinZhaozyx)
+Copyright (c) 2026 wanshuiyin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
