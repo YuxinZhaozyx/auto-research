@@ -27,6 +27,8 @@ Research topic: $ARGUMENTS
 
 This skill checks multiple sources **in priority order**. All are optional — if a source is not configured or not requested, skip it silently.
 
+Do not search for papers on arXiv unless explicitly stated.
+
 ### Source Selection
 
 Parse `$ARGUMENTS` for a `— sources:` directive:
@@ -129,9 +131,9 @@ Helper: `script/verify_papers.py` (in current skill directory).
 If the helper is unresolved on this machine, the SKILL emits a fallback `verified_papers.json` tagging every candidate `[UNVERIFIED]` so downstream analysis proceeds with audit-visible degraded output rather than silently dropping candidates.
 
 ```bash
-# 1. Emit candidates as JSON. Verification scratch lives under literature/internal
-mkdir -p literature/internal
-cat > literature/internal/candidate_papers.json <<'JSON'
+# 1. Emit candidates as JSON. Verification scratch lives under literature/.temp
+mkdir -p literature/.temp
+cat > literature/.temp/candidate_papers.json <<'JSON'
 [
   {"id": "p1", "arxiv_id": "2307.03172", "doi": null, "title": "Lost in the Middle"},
   {"id": "p2", "arxiv_id": null, "doi": "10.1145/...", "title": "..."},
@@ -145,22 +147,22 @@ JSON
 #    can audit search quality. If python itself is missing, we BLOCK
 #    rather than hand-roll JSON in shell.
 if [ -f .env ]; then set -a; source .env; set +a; fi
-python script/verify_papers.py --input  literature/internal/candidate_papers.json --output literature/internal/verified_papers.json
+python script/verify_papers.py --input  literature/.temp/candidate_papers.json --output literature/.temp/verified_papers.json
 
 python - <<'PY'
 import json
-cands = json.load(open('literature/internal/candidate_papers.json'))
+cands = json.load(open('literature/.temp/candidate_papers.json'))
 out = {
   'verdict': 'WARN',
   'reason_code': 'verify_papers_unavailable',
   'summary': 'verify_papers.py helper unresolved or invocation failed; all candidates tagged [UNVERIFIED] for audit visibility.',
   'papers': [dict(p, status='unverified', method='none') for p in cands],
 }
-with open('literature/internal/verified_papers.json', 'w') as f:
+with open('literature/.temp/verified_papers.json', 'w') as f:
   json.dump(out, f, indent=2)
 PY
 
-# 4. Read verdict + per-paper status from literature/internal/verified_papers.json;
+# 4. Read verdict + per-paper status from literature/.temp/verified_papers.json;
 #    surface warnings to the user.
 ```
 
@@ -190,7 +192,7 @@ PY
 > arXiv-id / DOI / title-hash, already assigned upstream in Step 1.5>",
 > problem, method, results, relevance, source, verification_status}]}`.
 
-For **every** paper in `literature/internal/verified_papers.json` (verified, unverified, `verify_pending`, and `error` alike — see Retention rule above), extract:
+For **every** paper in `literature/.temp/verified_papers.json` (verified, unverified, `verify_pending`, and `error` alike — see Retention rule above), extract:
 - **Problem**: What gap does it address?
 - **Method**: Core technical contribution (1-2 sentences)
 - **Results**: Key numbers/claims
@@ -220,7 +222,7 @@ Present as a structured literature table:
 
 Plus a narrative summary of the landscape (3-5 paragraphs).
 
-Save the structured literature table and related informations as a Report to a `REVIEW.md` in `literature/summary/` (in current project directory).
+Save the structured literature table and related informations as a Report to a `REVIEW-[topic].md` in `literature/summary/` (in current project directory).
 
 If Zotero BibTeX was exported, include a `references.bib` snippet for direct use in paper writing.
 
