@@ -15,6 +15,8 @@
 目前包含:
 
 - **`literature-review`** —— 一条「检索 → 验证 → 分析 → 综合」流水线。从 Zotero(MCP)、本地 PDF、Semantic Scholar、网络抓取候选,对每篇执行四层反幻觉检查,并将结构化综述写入 `REVIEW.md`。
+- **`novelty-check`** —— 在动手实现之前,对照近期文献验证某个方法/想法的创新性。抽取核心技术论断并逐一检索,输出经校准的 `PROCEED` / `PROCEED WITH CAUTION` / `ABANDON` 结论及最接近的已有工作。
+- **`idea-discovery`** —— 从宏观方向出发,生成并排序可发表的研究想法,走「文献调研 → 头脑风暴 → 查新 → 报告」流水线。
 
 更多技能正在规划中。
 
@@ -73,7 +75,31 @@ cp .env.example .env   # 随后填入变量值(见下方「环境变量」)
 
 **Zotero(可选)。** `zotero` 数据源需要一个 Zotero MCP server。安装一个(如社区版 `zotero-mcp` 包),在 harness 的 MCP 设置中注册,指向你的文献库——可连接本地 Zotero 应用(在 *编辑 → 首选项 → 高级 → 常规* 中勾选「允许本机其他应用与 Zotero 通信」),或使用 Zotero Web API 密钥。技能会在运行时自动探测可用的 Zotero 工具;若不存在,`zotero` 将被直接跳过,由其余数据源接管。
 
-产出写入 `literature/summary/REVIEW.md` —— 文献表格 + 叙述性综述,可选 `references.bib`。每篇论文标注验证状态(`✅ verified` / `⚠️ UNVERIFIED` / `… VERIFY_PENDING`);未验证者绝不静默丢弃,便于你自行审计检索质量。
+产出写入 `literature/summary/REVIEW-[topic].md` —— 文献表格 + 叙述性综述,可选 `references.bib`。每篇论文标注验证状态(`✅ verified` / `⚠️ UNVERIFIED` / `… VERIFY_PENDING`);未验证者绝不静默丢弃,便于你自行审计检索质量。
+
+### `novelty-check`
+
+在实现之前,验证某个研究想法是否具备创新性。
+
+**工作原理。** 从你的方法描述中抽取 3–5 条核心技术论断,针对每一条检索近期文献(复用 `literature-review`),再将一份 dossier 交给评审者,在一套校准规则下判断创新性。这些规则旨在避免两种代价相当的失败:把一篇已发表论文已包含的想法误判为通过,以及因为「这片领域有近邻」就扼杀一个可行的想法。邻近是信息,而非结论——`ABANDON` 必须点名某篇已包含该结果的论文。
+
+```
+/novelty-check "一个用 X 解决 Y 的方法"
+```
+
+产出写入 `idea/novelty/NOVELTY-[topic].md` —— 一份结构化报告,包含拟议方法、核心论断及其最接近的已有工作、创新性评分(`X/10`),以及 `PROCEED` / `PROCEED WITH CAUTION` / `ABANDON` 的结论。
+
+### `idea-discovery`
+
+从宏观方向出发,生成并排序可发表的研究想法。
+
+**工作原理。** 四阶段流水线:(1) `literature-review` 绘制研究版图并暴露结构性空白;(2) 一个发散思维子 agent 头脑风暴出 8–12 个具体想法;(3) 每个入选想法都过一遍 `novelty-check`;(4) 写出排序后的报告,最强者置顶,被淘汰的想法附淘汰理由。
+
+```
+/idea-discovery "大语言模型的高效训练"
+```
+
+产出写入 `idea/summary/IDEA_REPORT.md`。
 
 ## 致谢
 

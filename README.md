@@ -15,6 +15,8 @@
 Currently ships with:
 
 - **`literature-review`** — a search → verify → analyze → synthesize pipeline. Pulls from Zotero (MCP), local PDFs, Semantic Scholar, and the web; runs a 4-layer anti-hallucination check on every candidate; and writes a structured review to `REVIEW.md`.
+- **`novelty-check`** — verifies a proposed method or idea against recent literature before you implement it. Extracts the core technical claims, searches for each, and returns a calibrated `PROCEED` / `PROCEED WITH CAUTION` / `ABANDON` verdict with the closest prior work.
+- **`idea-discovery`** — generates and ranks publishable research ideas from a broad direction, through a literature survey → brainstorm → novelty check → report pipeline.
 
 More skills are planned.
 
@@ -73,7 +75,31 @@ Point to a custom local PDF path inline:
 
 **Zotero (optional).** The `zotero` source needs a Zotero MCP server. Install one (e.g. a community `zotero-mcp` package) and register it in your harness's MCP settings, pointing it at your library — either the local Zotero app (enable *Edit → Preferences → Advanced → General → "Allow other applications on this computer to communicate with Zotero"*) or a Zotero Web API key. The skill auto-detects available Zotero tools at run time; if none are present, `zotero` is simply skipped and the other sources take over.
 
-Output is written to `literature/summary/REVIEW.md` — a literature table plus a narrative summary, with optional `references.bib`. Every paper is tagged with a verification status (`✅ verified` / `⚠️ UNVERIFIED` / `… VERIFY_PENDING`); unverified papers are never silently dropped, so you can audit search quality yourself.
+Output is written to `literature/summary/REVIEW-[topic].md` — a literature table plus a narrative summary, with optional `references.bib`. Every paper is tagged with a verification status (`✅ verified` / `⚠️ UNVERIFIED` / `… VERIFY_PENDING`); unverified papers are never silently dropped, so you can audit search quality yourself.
+
+### `novelty-check`
+
+Verify a research idea is novel before you build it.
+
+**How it works.** It extracts 3–5 core technical claims from your method description, searches recent literature for each (reusing `literature-review`), then hands a reviewer a dossier to judge novelty under a set of calibration rules designed to avoid two equal failures: passing an idea a published paper already contains, and killing a viable idea because the territory merely has neighbors. Proximity is information, not a verdict — `ABANDON` requires naming a specific paper that already contains the result.
+
+```
+/novelty-check "a method that uses X to solve Y"
+```
+
+Output is written to `idea/novelty/NOVELTY-[topic].md` — a structured report with the proposed method, its core claims and their closest prior work, a novelty score (`X/10`), and a `PROCEED` / `PROCEED WITH CAUTION` / `ABANDON` verdict.
+
+### `idea-discovery`
+
+Generate and rank publishable research ideas from a broad direction.
+
+**How it works.** A four-phase pipeline: (1) `literature-review` maps the research landscape and surfaces structural gaps; (2) a divergent-thinking subagent brainstorms 8–12 concrete ideas; (3) each top idea is run through `novelty-check`; (4) a ranked report is written with the strongest ideas up top and eliminated ideas listed with reasons.
+
+```
+/idea-discovery "efficient training of large language models"
+```
+
+Output is written to `idea/summary/IDEA_REPORT.md`.
 
 ## Acknowledgments
 
