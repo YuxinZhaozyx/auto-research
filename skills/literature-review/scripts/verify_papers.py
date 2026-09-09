@@ -365,6 +365,23 @@ def verify_papers(
     to_verify_doi: list[PaperInput] = []
     to_verify_title: list[PaperInput] = []
 
+    # Distribute candidates into the priority cascade: arXiv ID first,
+    # then DOI, then title-only, else malformed input.
+    for p in papers:
+        if p.arxiv_id:
+            base, _ = normalize_arxiv_id(p.arxiv_id)
+            to_verify_arxiv.setdefault(base, []).append(p.id)
+        elif p.doi:
+            to_verify_doi.append(p)
+        elif p.title:
+            to_verify_title.append(p)
+        else:
+            results[p.id] = PaperResult(
+                id=p.id,
+                status="error",
+                reason="no_arxiv_no_doi_no_title",
+            )
+
     # Layer 1: arXiv batch
     if to_verify_arxiv:
         arxiv_results = verify_arxiv_batch(list(to_verify_arxiv.keys()), arxiv_batch_size)

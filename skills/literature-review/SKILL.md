@@ -32,7 +32,7 @@ Do not search for papers on arXiv unless explicitly stated.
 ### Source Selection
 
 Parse `$ARGUMENTS` for a `— sources:` directive:
-- **If `— sources:` is specified**: Only search the listed sources (comma-separated). Valid values: `zotero`, `local`, `web`, `semantic-scholar`, `all`.
+- **If `— sources:` is specified**: Only search the listed sources (comma-separated). Valid values: `zotero`, `local`, `semantic-scholar`, `web`, `all`.
 - **If not specified**: Default to `all` — search every available source in priority order.
 
 Examples:
